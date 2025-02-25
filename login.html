@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experiment-6</title>
+    <style>
+        h2{
+            display: none;
+        }
+    </style>
+   
+        <script src="https://code.jquery.com/jquery-3.7.1.js" ></script>
+    <script>
+        const form=$("#loginform")
+        $(document).ready(function(){
+            $('#loginform').submit((event)=>{
+                event.preventDefault();
+                var name=$("#username").val();
+                var password=$("#pwd").val();
+                //generate token by making a service call to/auth with post
+                $.ajax({
+                    url:"/auth",
+                    type:"post",
+                    contentType:"application/json",
+                    dataType:"json",
+                    data:JSON.stringify({
+                        name:name,
+                        password:password
+
+                    }),
+                    success:function(data){
+                        var tokenData=data;
+                        if(tokenData.login==true){
+                            if(verifyLogin(tokenData.token)){
+                                $("#verified").show();
+                                $("#not-verified").hide();
+                                alert("JWT Token"+tokenData.token);
+                            }
+                        }
+                        else{
+                            $("#verified").hide();
+                            $("#not-verified").show();
+                             alert("autrhentication failed");
+                        }
+                    },
+                    error:function(data){
+                        console.log("something went wrong");
+                    }
+                });
+            });
+        });
+        function verifyLogin(token){
+            let result=true;
+            //verifyToken by making a service call to/verifyToken with post
+            $.ajax({
+                    url:"/verifyToken",
+                    type:"post",
+                    contentType:"application/json",
+                    dataType:"json",
+                    data:JSON.stringify({
+                        token:token,
+                    }),
+                    success:function(data){
+                        if(data.login==true){
+                            result=true;
+                        }
+                        else{
+                            result=false;
+                        }
+                    },
+                    error:function(data){
+                        console.log("wrong Token,Not authenticated")
+                    }
+            });
+            return result;
+
+        }
+    </script>
+    
+</head>
+<body>
+    <h3>Sign In</h3>
+    <form id="loginform">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username"><br><br>
+        <label for="pwd">Password:</label>
+        <input type="password" id="pwd" name="pwd"><br><br>
+        <input type="submit" value="submit">
+    </form>
+    <h2 id="verified">you are a verified user </h2>
+    <h2 id="not-verified">You are not a verified user</h2>
+</body>
+</html>
